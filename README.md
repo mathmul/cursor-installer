@@ -2,6 +2,21 @@
 
 A bash script for installing and managing [Cursor](https://cursor.sh/) on Debian/Ubuntu-based Linux distributions.
 
+## Quickstart
+
+Just run the setup script to install and configure Cursor:
+```bash
+curl -sSL https://raw.githubusercontent.com/mablr/cursor-installer/master/setup.sh | bash -s -- -a
+```
+
+Or clone this repository and then run the setup script:
+```
+git clone https://github.com/mablr/cursor-installer
+cd cursor-installer
+chmod +x setup.sh
+./setup.sh -a
+```
+
 ## Features
 
 - Downloads the latest Cursor AppImage
