@@ -280,21 +280,24 @@ Usage: $0 [OPTIONS]
 A command-line installer for Cursor AppImage on Debian/Ubuntu based Linux distributions.
 
 Options:
-  -h, --help             Show this help message and exit
-  -a, --all              All-in-one install (fetch, download & configure all)
-  -f, --fetch            Fetch and download latest version
-  -c, --configure        Configure desktop launcher and CLI command
-  -v, --verbose          Increase verbosity
-  -q, --quiet            Reduce verbosity (show only errors)
-  -s, --status           Check status of installed Cursor version
+  -a, --all             All-in-one Cursor installation (Recommended)
+
+  -f, --fetch           Only fetch latest Cursor AppImage 
+  -c, --configure       Configure desktop launcher and CLI
+
+  -s, --status          Check Cursor installation status
+
+  -h, --help            Show help message
+  -v, --verbose         Increase verbosity
+  -q, --quiet           Show only errors
 
 Examples:
   $0 --all               # Complete installation
-  $0 --fetch             # Only fetch and download latest version
-  $0 --configure         # Configure desktop launcher and CLI for existing installation
+  $0 --fetch             # Only fetch latest version, existing configuration will be preserved
+  $0 --configure         # Configure desktop launcher and CLI for latest downloaded version
   $0 --status            # Check the status of installed Cursor version
 
-Report bugs to: https://github.com/USERNAME/cursor-installer/issues
+Report bugs to: https://github.com/mablr/cursor-installer/issues
 EOF
 }
 
