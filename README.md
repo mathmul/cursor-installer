@@ -21,9 +21,20 @@ chmod +x setup.sh
 
 - Downloads the latest Cursor AppImage
 - Creates desktop launcher
-- Adds `cursor` command to system path
+- Adds `cursor` command to path
 - Checks installation status
-- Easy to use command-line interface
+- Simple command-line interface
+
+## Roadmap
+
+- [x] Implement all features available in the [`cursor-setup-wizard`](https://github.com/jorcelinojunior/cursor-setup-wizard/)
+- [x] AppImage download url retrieval through official Cursor API
+- [x] Support any Debian-based OS
+- [ ] Uninstaller feature
+- [ ] Fix Cursor installation status check in Cursor Terminal for `cursor` command (yes that's deep)
+- [ ] Fully unprivileged configuration
+- [ ] Integration with Cursor's internal auto-update mechanism
+
 
 ## Usage
 
