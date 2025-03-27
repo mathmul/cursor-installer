@@ -441,8 +441,7 @@ main() {
   
     # Download if requested
     if [[ "$do_download" == true ]]; then
-      find_local_version
-      if [[ -z "$local_path" || "$local_hash" != "$remote_hash" ]]; then
+      if ! find_local_version || [[ "$local_hash" != "$remote_hash" ]]; then
         download_appimage || exit 1
       else
         log 2 "Latest version already downloaded. No need to download again."
@@ -451,11 +450,11 @@ main() {
   fi
   
   # If we need to configure but have no local version, try to find it
-  if [[ "$do_desktop" == true || "$do_cli" == true ]] && [[ -z "$local_path" ]]; then
-    find_local_version || {
+  if [[ "$do_desktop" == true || "$do_cli" == true || "$do_logo" == true ]]; then
+    if ! find_local_version; then
       log 0 "No local Cursor AppImage found. Use --fetch to download."
       exit 1
-    }
+    fi
   fi
   
   # Download logo if needed
