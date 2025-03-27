@@ -90,7 +90,7 @@ find_remote_version() {
   log 2 "Looking for the latest version online..."
   local api_response
   
-  api_response=$(timeout "3" curl -s "$API_URL")
+  api_response=$(timeout "5" curl -s "$API_URL")
   if [[ $? -ne 0 ]]; then
     log 0 "Failed to fetch data from the API server. Check your internet connection."
     return 1
@@ -104,7 +104,7 @@ find_remote_version() {
   
   log 2 "Latest version details retrieved successfully."
   
-  headers=$(timeout "3" curl -s -I "$download_url")
+  headers=$(timeout "5" curl -s -I "$download_url")
   if [[ -z "$headers" ]]; then
     log 0 "Failed to fetch file details from the download server."
     return 1
