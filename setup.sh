@@ -323,21 +323,21 @@ print_status() {
   # Initialize configuration status flag
   local config_needs_update=false
   
-  # Check desktop launcher
-  echo -n "  Desktop launcher: "
+  # Check launchers (desktop and application)
+  echo -n "  Launcher: "
   
-  if [[ ! -f "$USER_DESKTOP_FILE" ]]; then
+  if [[ ! -f "$USER_DESKTOP_FILE" || ! -f "$APPLICATION_DESKTOP_FILE" ]]; then
     echo "No [NEEDS CONFIGURATION]"
     config_needs_update=true
-    return
-  fi
-  
-  local desktop_exec=$(grep -oP '^Exec=\K.*' "$USER_DESKTOP_FILE" 2>/dev/null)
-  if [[ -n "$desktop_exec" && "$desktop_exec" == "$local_path" ]]; then
-    echo "Yes ($USER_DESKTOP_FILE) [VALID]"
   else
-    echo "Yes ($USER_DESKTOP_FILE) [NEEDS RECONFIGURATION]"
-    config_needs_update=true
+    local desktop_exec=$(grep -oP '^Exec=\K.*AppImage' "$USER_DESKTOP_FILE" 2>/dev/null)
+    local application_exec=$(grep -oP '^Exec=\K.*AppImage' "$APPLICATION_DESKTOP_FILE" 2>/dev/null)
+    if [[ -n "$desktop_exec" && "$desktop_exec" == "$local_path" && -n "$application_exec" && "$application_exec" == "$local_path" ]]; then
+      echo "Yes [VALID]"
+    else
+      echo "Yes [NEEDS RECONFIGURATION]"
+      config_needs_update=true
+    fi
   fi
   
   # Check CLI command
@@ -346,17 +346,16 @@ print_status() {
   if ! command -v cursor &> /dev/null; then
     echo "No [NEEDS CONFIGURATION]"
     config_needs_update=true
-    return
-  fi
-  
-  local cli_path=$(grep -oP 'APPIMAGE_PATH="\K[^"]*' "$(which cursor)" 2>/dev/null)
-  if [[ -n "$cli_path" && "$cli_path" == "$local_path" ]]; then
-    echo "Yes ($(which cursor)) [VALID]"
   else
-    echo "Yes ($(which cursor)) [NEEDS RECONFIGURATION]"
-    config_needs_update=true
+    local cli_path=$(grep -oP 'APPIMAGE_PATH="\K[^"]*' "$(which cursor)" 2>/dev/null)
+    if [[ -n "$cli_path" && "$cli_path" == "$local_path" ]]; then
+      echo "Yes ($(which cursor)) [VALID]"
+    else
+      echo "Yes ($(which cursor)) [NEEDS RECONFIGURATION]"
+      config_needs_update=true
+    fi
   fi
-  
+
   # Show recommendation if any configuration needs update
   if [[ "$config_needs_update" == true ]]; then
     echo ""
