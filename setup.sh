@@ -6,6 +6,7 @@ set -euo pipefail
 readonly DOWNLOAD_DIR="$HOME/.AppImage"
 readonly ICON_DIR="$HOME/.local/share/icons"
 readonly USER_DESKTOP_FILE="$HOME/Desktop/cursor.desktop"
+readonly APPLICATION_DESKTOP_FILE="$HOME/.local/share/applications/cursor.desktop"
 readonly API_URL="https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
 readonly ICON_URL="https://mintlify.s3.us-west-1.amazonaws.com/cursor/images/logo/app-logo.svg"
 
@@ -204,12 +205,13 @@ download_appimage() {
 }
 
 setup_launchers() {
-  log 2 "Creating desktop launcher for Cursor..."
+  log 2 "Creating launchers for Cursor..."
   
-  local dir_path=$(dirname "$USER_DESKTOP_FILE")
-  [[ ! -d "$dir_path" ]] && mkdir -p "$dir_path"
-  
-  cat > "$USER_DESKTOP_FILE" << EOF
+  for launcher_path in "$USER_DESKTOP_FILE" "$APPLICATION_DESKTOP_FILE"; do
+    local dir_path=$(dirname "$launcher_path")
+    [[ ! -d "$dir_path" ]] && mkdir -p "$dir_path"
+    
+    cat > "$launcher_path" << EOF
 [Desktop Entry]
 Type=Application
 Name=Cursor
@@ -224,23 +226,24 @@ Comment=Cursor is an AI-first coding environment for software development.
 Keywords=cursor;ai;code;editor;ide;artificial;intelligence;learning;programming;developer;development;software;engineering;productivity;vscode;sublime;coding;gpt;openai;copilot;
 MimeType=x-scheme-handler/cursor;
 EOF
-  
-  if chmod +x "$USER_DESKTOP_FILE"; then
-    log 2 "Launcher created and set executable: $USER_DESKTOP_FILE"
-  else
-    log 1 "Failed to set permissions for $USER_DESKTOP_FILE"
-  fi
-  
-  # Make launcher trusted if gio is available
-  if command -v gio > /dev/null 2>&1; then
-    if gio set "$USER_DESKTOP_FILE" "metadata::trusted" true 2>/dev/null; then
-      log 2 "Launcher marked as trusted: $USER_DESKTOP_FILE"
+    
+    if chmod +x "$launcher_path"; then
+      log 2 "Launcher set as executable: $launcher_path"
     else
-      log 1 "Failed to mark $USER_DESKTOP_FILE as trusted"
+      log 1 "Failed to set permissions for $launcher_path"
     fi
-  fi
+    
+    # Make launcher trusted if gio is available
+    if command -v gio > /dev/null 2>&1; then
+      if gio set "$launcher_path" "metadata::trusted" true 2>/dev/null; then
+        log 2 "Launcher marked as trusted: $launcher_path"
+      else
+        log 1 "Failed to mark $launcher_path as trusted"
+      fi
+    fi
+  done
   
-  log 2 "Desktop launcher setup completed"
+  log 2 "Launchers setup completed"
   return 0
 }
 
