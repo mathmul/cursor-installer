@@ -59,6 +59,7 @@ check_dependencies() {
     "curl:curl"
     "jq:jq"
     "xxd:vim-common"
+    "libfuse2:libfuse2"
   )
   
   for dep in "${deps[@]}"; do
@@ -216,7 +217,7 @@ setup_launchers() {
 Type=Application
 Name=Cursor
 GenericName=Intelligent, fast, and familiar, Cursor is the best way to code with AI.
-Exec=$local_path
+Exec=$local_path --no-sandbox
 Icon=$ICON_DIR/cursor-icon.svg
 X-AppImage-Version=$local_version
 Categories=Utility;Development
@@ -259,7 +260,7 @@ if [[ ! -f \"\$APPIMAGE_PATH\" ]]; then
    exit 1;
 fi
 
-\"\$APPIMAGE_PATH\" \"\$@\" &> /dev/null &
+\"\$APPIMAGE_PATH\" --no-sandbox \"\$@\" &> /dev/null &
 "
   
   if echo "$script_content" | sudo tee /usr/local/bin/cursor > /dev/null; then
