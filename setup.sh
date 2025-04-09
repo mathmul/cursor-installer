@@ -58,7 +58,7 @@ check_dependencies() {
   local deps=(
     "curl:curl"
     "jq:jq"
-    "xxd:vim-common"
+    "xxd:xxd"
     "libfuse2:libfuse2"
   )
   
