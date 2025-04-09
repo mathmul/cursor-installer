@@ -295,12 +295,6 @@ Options:
   -v, --verbose         Increase verbosity
   -q, --quiet           Show only errors
 
-Examples:
-  $0 --all               # Complete installation
-  $0 --fetch             # Only fetch latest version, existing configuration will be preserved
-  $0 --configure         # Configure desktop launcher and CLI for latest downloaded version
-  $0 --status            # Check the status of installed Cursor version
-
 Report bugs to: https://github.com/mablr/cursor-installer/issues
 EOF
 }

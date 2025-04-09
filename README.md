@@ -54,12 +54,6 @@ Options:
   -h, --help            Show help message
   -v, --verbose         Increase verbosity
   -q, --quiet           Show only errors
-
-Examples:
-  ./setup.sh --all               # Complete installation
-  ./setup.sh --fetch             # Only fetch latest version, existing configuration will be preserved
-  ./setup.sh --configure         # Configure desktop launcher and CLI for latest downloaded version
-  ./setup.sh --status            # Check the status of installed Cursor version
 ```
 
 ## Acknowledgements
