@@ -54,20 +54,16 @@ check_dependencies() {
   log 2 "Checking dependencies..."
   local missing=()
   
-  # List of required commands and their corresponding packages
   local deps=(
-    "curl:curl"
-    "jq:jq"
-    "xxd:xxd"
-    "libfuse2:libfuse2"
+    "curl"
+    "jq"
+    "xxd"
+    "libfuse2"
   )
   
   for dep in "${deps[@]}"; do
-    local cmd="${dep%%:*}"
-    local pkg="${dep#*:}"
-    
-    if ! command -v "$cmd" > /dev/null 2>&1; then
-      missing+=("$pkg")
+    if ! command -v "$dep" > /dev/null 2>&1; then
+      missing+=("$dep")
     fi
   done
   
