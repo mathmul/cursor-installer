@@ -8,7 +8,7 @@ readonly ICON_DIR="$HOME/.local/share/icons"
 readonly USER_DESKTOP_FILE="$HOME/Desktop/cursor.desktop"
 readonly APPLICATION_DESKTOP_FILE="$HOME/.local/share/applications/cursor.desktop"
 readonly API_URL="https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
-readonly ICON_URL="https://mintlify.s3.us-west-1.amazonaws.com/cursor/images/logo/app-logo.svg"
+readonly ICON_URL="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg"
 
 # Variables
 local_name=""
