@@ -7,6 +7,7 @@ readonly DOWNLOAD_DIR="$HOME/.AppImage"
 readonly ICON_DIR="$HOME/.local/share/icons"
 readonly USER_DESKTOP_FILE="$HOME/Desktop/cursor.desktop"
 readonly APPLICATION_DESKTOP_FILE="$HOME/.local/share/applications/cursor.desktop"
+readonly CLI_COMMAND="/usr/local/bin/cursor"
 readonly API_URL="https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
 readonly ICON_URL="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg"
 
@@ -259,18 +260,116 @@ fi
 \"\$APPIMAGE_PATH\" --no-sandbox \"\$@\" &> /dev/null &
 "
   
-  if echo "$script_content" | sudo tee /usr/local/bin/cursor > /dev/null; then
-    if sudo chmod +x /usr/local/bin/cursor; then
+  if echo "$script_content" | sudo tee "$CLI_COMMAND" > /dev/null; then
+    if sudo chmod +x "$CLI_COMMAND"; then
       log 2 "CLI command 'cursor' successfully installed."
       return 0
     else
-      log 0 "Failed to set permissions for /usr/local/bin/cursor"
+      log 0 "Failed to set permissions for $CLI_COMMAND"
       return 1
     fi
   else
     log 0 "Failed to create CLI command."
     return 1
   fi
+}
+
+remove_icon() {
+  log 2 "Removing Cursor icon..."
+  if [[ -f "$ICON_DIR/cursor-icon.svg" ]]; then
+    if rm -f "$ICON_DIR/cursor-icon.svg"; then
+      log 2 "Icon removed successfully."
+    else
+      log 0 "Failed to remove icon file."
+      return 1
+    fi
+  else
+    log 2 "Icon file not found. Skipping."
+  fi
+  return 0
+}
+
+remove_launchers() {
+  log 2 "Removing desktop files..."
+  local result=0
+  
+  if [[ -f "$USER_DESKTOP_FILE" ]]; then
+    if rm -f "$USER_DESKTOP_FILE"; then
+      log 2 "Desktop file removed: $USER_DESKTOP_FILE"
+    else
+      log 0 "Failed to remove desktop file: $USER_DESKTOP_FILE"
+      result=1
+    fi
+  else
+    log 2 "Desktop file not found: $USER_DESKTOP_FILE. Skipping."
+  fi
+  
+  if [[ -f "$APPLICATION_DESKTOP_FILE" ]]; then
+    if rm -f "$APPLICATION_DESKTOP_FILE"; then
+      log 2 "Application desktop file removed: $APPLICATION_DESKTOP_FILE"
+    else
+      log 0 "Failed to remove application desktop file: $APPLICATION_DESKTOP_FILE"
+      result=1
+    fi
+  else
+    log 2 "Application desktop file not found: $APPLICATION_DESKTOP_FILE. Skipping."
+  fi
+  
+  return $result
+}
+
+remove_cli_command() {
+  log 2 "Removing 'cursor' command..."
+  if [[ -f "$CLI_COMMAND" ]]; then
+    if sudo rm -f "$CLI_COMMAND"; then
+      log 2 "CLI command removed successfully."
+    else
+      log 0 "Failed to remove CLI command."
+      return 1
+    fi
+  else
+    log 2 "CLI command not found. Skipping."
+  fi
+  return 0
+}
+
+remove_appimages() {
+  log 2 "Removing Cursor AppImages..."
+  local cursor_appimages=$(find "$DOWNLOAD_DIR" -maxdepth 1 -type f -name 'Cursor-*.AppImage' 2>/dev/null)
+  
+  if [[ -z "$cursor_appimages" ]]; then
+    log 2 "No Cursor AppImages found in $DOWNLOAD_DIR"
+    return 0
+  fi
+  
+  local count=0
+  while IFS= read -r appimage; do
+    if rm -f "$appimage"; then
+      log 2 "Removed: $appimage"
+      ((count++))
+    else
+      log 0 "Failed to remove: $appimage"
+    fi
+  done <<< "$cursor_appimages"
+  
+  log 2 "Removed $count Cursor AppImage(s)."
+  return 0
+}
+
+uninstall_cursor() {
+  local purge=$1
+  log 2 "Uninstalling Cursor..."
+  
+  remove_icon
+  remove_launchers
+  remove_cli_command
+  
+  if [[ "$purge" == true ]]; then
+    remove_appimages
+  fi
+  
+  log 2 "Cursor has been uninstalled successfully!"
+  return 0
 }
 
 print_usage() {
@@ -286,6 +385,9 @@ Options:
   -c, --configure       Configure desktop launcher and CLI
 
   -s, --status          Check Cursor installation status
+
+  -r, --remove          Uninstall Cursor (remove icon, desktop launcher, and CLI command)
+  -p, --remove-purge    Uninstall Cursor and purge all AppImages
 
   -h, --help            Show help message
   -v, --verbose         Increase verbosity
@@ -369,6 +471,8 @@ main() {
   local do_desktop=false
   local do_cli=false
   local do_status=false
+  local do_remove=false
+  local do_purge=false
   
   # Parse command line arguments
   while [[ $# -gt 0 ]]; do
@@ -400,6 +504,15 @@ main() {
         do_status=true
         shift
         ;;
+      -r|--remove)
+        do_remove=true
+        shift
+        ;;
+      -p|--remove-purge)
+        do_remove=true
+        do_purge=true
+        shift
+        ;;
       -v|--verbose)
         LOG_LEVEL=3
         shift
@@ -422,6 +535,12 @@ main() {
   # Check status if requested
   if [[ "$do_status" == true ]]; then
     print_status
+    exit $?
+  fi
+  
+  # Handle uninstall/purge if requested
+  if [[ "$do_remove" == true ]]; then
+    uninstall_cursor "$do_purge"
     exit $?
   fi
   
@@ -465,7 +584,7 @@ main() {
     add_cli_command
   fi
   
-  log 2 "Cursor installation/configuration completed successfully!"
+  log 2 "Cursor setup script completed successfully!"
   return 0
 }
 
