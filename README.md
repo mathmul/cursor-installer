@@ -30,7 +30,7 @@ chmod +x setup.sh
 - [x] Implement all features available in the [`cursor-setup-wizard`](https://github.com/jorcelinojunior/cursor-setup-wizard/)
 - [x] AppImage download url retrieval through official Cursor API
 - [x] Support any Debian-based OS
-- [ ] Uninstaller feature
+- [x] Uninstaller feature
 - [ ] Fix Cursor installation status check in Cursor Terminal for `cursor` command (yes that's deep)
 - [ ] Fully unprivileged configuration
 - [ ] Integration with Cursor's internal auto-update mechanism
