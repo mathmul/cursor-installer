@@ -23,7 +23,7 @@ remote_version=""
 remote_hash=""
 download_url=""
 
-# Set log level (0=error, 1=warn, 2=info, 3=debug)
+# Set log level (0=error, 1=warn, 2=info)
 LOG_LEVEL=2
 
 # Function Definitions
@@ -36,7 +36,6 @@ log() {
     0) [[ $LOG_LEVEL -ge 0 ]] && echo -e "[$timestamp] ERROR: $msg" ;;
     1) [[ $LOG_LEVEL -ge 1 ]] && echo -e "[$timestamp] WARNING: $msg" ;;
     2) [[ $LOG_LEVEL -ge 2 ]] && echo -e "[$timestamp] INFO: $msg" ;;
-    3) [[ $LOG_LEVEL -ge 3 ]] && echo -e "[$timestamp] DEBUG: $msg" ;;
   esac
 }
 
@@ -390,8 +389,7 @@ Options:
   -p, --remove-purge    Uninstall Cursor and purge all AppImages
 
   -h, --help            Show help message
-  -v, --verbose         Increase verbosity
-  -q, --quiet           Show only errors
+  -q, --quiet           Show only errors and warnings
 
 Report bugs to: https://github.com/mablr/cursor-installer/issues
 EOF
@@ -513,12 +511,8 @@ main() {
         do_purge=true
         shift
         ;;
-      -v|--verbose)
-        LOG_LEVEL=3
-        shift
-        ;;
       -q|--quiet)
-        LOG_LEVEL=0
+        LOG_LEVEL=1
         shift
         ;;
       *)

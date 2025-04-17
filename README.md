@@ -51,8 +51,7 @@ Options:
   -s, --status          Check Cursor installation status
 
   -h, --help            Show help message
-  -v, --verbose         Increase verbosity
-  -q, --quiet           Show only errors
+  -q, --quiet           Show only errors and warnings
 ```
 
 ## Acknowledgements
