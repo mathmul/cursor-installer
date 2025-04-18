@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Constants
-readonly DOWNLOAD_DIR="$HOME/.AppImage"
+readonly APPIMAGE_DIR="$HOME/.AppImage"
 readonly ICON_DIR="$HOME/.local/share/icons"
 readonly USER_DESKTOP_FILE="$HOME/Desktop/cursor.desktop"
 readonly APPLICATION_DESKTOP_FILE="$HOME/.local/share/applications/cursor.desktop"
@@ -12,14 +12,7 @@ readonly API_URL="https://www.cursor.com/api/download?platform=linux-x64&release
 readonly ICON_URL="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg"
 
 # Variables
-local_name=""
-local_size=""
-local_version=""
-local_path=""
 local_hash=""
-remote_name=""
-remote_size=""
-remote_version=""
 remote_hash=""
 download_url=""
 
@@ -75,19 +68,11 @@ check_dependencies() {
   log 2 "All dependencies are installed."
 }
 
-extract_version() {
-  [[ "$1" =~ ([0-9]+\.[0-9]+\.[0-9]+) ]] && { echo "${BASH_REMATCH[1]}"; return 0; }
-  echo "0.0.0" >&2; return 1
-}
-
-convert_to_mb() { 
-  printf "%.2f MB" "$(echo "scale=2; $1 / 1048576" | bc)"
-}
-
 find_remote_version() {
   log 2 "Looking for the latest version online..."
   local api_response
-  
+  local headers
+
   api_response=$(timeout "5" curl -s "$API_URL")
   if [[ $? -ne 0 ]]; then
     log 0 "Failed to fetch data from the API server. Check your internet connection."
@@ -100,43 +85,16 @@ find_remote_version() {
     return 1
   fi
   
-  log 2 "Latest version details retrieved successfully."
-  
   headers=$(timeout "5" curl -s -I "$download_url")
   if [[ -z "$headers" ]]; then
     log 0 "Failed to fetch file details from the download server."
     return 1
   fi
   
-  remote_name=$(basename "$download_url")
-  remote_size=$(echo "$headers" | grep -i 'Content-Length:' | awk '{print $2}' | tr -d '\r\n') || remote_size="0"
-  remote_version=$(extract_version "$remote_name")
   remote_hash=$(echo "$headers" | grep -i 'etag:' | sed 's/etag: //;s/"//g' | tr -d '\r\n' || echo "unknown")
   
-  if [[ -z "$remote_name" ]]; then
-    log 0 "Could not determine the filename from download URL."
-    return 1
-  fi
-  
-  log 2 "Latest version online: $remote_name (v$remote_version, $(convert_to_mb "$remote_size"))"
+  log 2 "Latest version hash: $remote_hash"
   return 0
-}
-
-find_local_version() {
-  mkdir -p "$DOWNLOAD_DIR"
-  local_path=$(find "$DOWNLOAD_DIR" -maxdepth 1 -type f -name 'Cursor-*.AppImage' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)
-  
-  if [[ -n "$local_path" ]]; then
-    local_name=$(basename "$local_path")
-    local_size=$(stat -c %s "$local_path" 2>/dev/null || echo "0")
-    local_version=$(extract_version "$local_path")
-    local_hash=$(calculate_etag "$local_path")
-    log 2 "Local version found: $local_name (v$local_version, $(convert_to_mb "$local_size"))"
-    return 0
-  fi
-  
-  log 2 "No local version found in $DOWNLOAD_DIR"
-  return 1
 }
 
 calculate_etag() {
@@ -158,6 +116,18 @@ calculate_etag() {
   echo "$etag"
 }
 
+find_local_version() {
+  if [[ -f "$APPIMAGE_DIR/Cursor.AppImage" ]]; then
+    local_path="$APPIMAGE_DIR/Cursor.AppImage"
+    local_hash=$(calculate_etag "$local_path")
+    log 2 "Local version hash: $local_hash"
+    return 0
+  else
+    log 2 "No local version found in $APPIMAGE_DIR"
+    return 1
+  fi
+}
+
 download_logo() {
   log 2 "Downloading Cursor logo..."
   mkdir -p "$ICON_DIR"
@@ -173,16 +143,16 @@ download_logo() {
 
 download_appimage() {
   log 2 "Starting the download of the latest version..."
-  local output_document="$DOWNLOAD_DIR/$remote_name"
+  local cursor_path="$APPIMAGE_DIR/Cursor.AppImage"
   
   if [[ -z "$download_url" ]]; then
     log 0 "Download URL is empty. Please fetch the remote version first."
     return 1
   fi
   
-  log 2 "Downloading AppImage to $output_document"
+  log 2 "Downloading AppImage to $cursor_path"
   
-  if curl -L --progress-bar -o "$output_document" "$download_url"; then
+  if curl -L --progress-bar -o "$cursor_path" "$download_url"; then
     log 2 "Download completed successfully"
   else
     log 0 "AppImage download failed."
@@ -190,14 +160,14 @@ download_appimage() {
   fi
   
   log 2 "Adjusting permissions for the AppImage..."
-  if chmod +x "$output_document"; then
+  if chmod +x "$cursor_path"; then
     log 2 "Permissions updated for the new AppImage."
   else
-    log 0 "Failed to set executable permissions for $output_document"
+    log 0 "Failed to set executable permissions for $cursor_path"
     return 1
   fi
   
-  local_path="$output_document"
+  local_path="$cursor_path"
   return 0
 }
 
@@ -213,9 +183,8 @@ setup_launchers() {
 Type=Application
 Name=Cursor
 GenericName=Intelligent, fast, and familiar, Cursor is the best way to code with AI.
-Exec=$local_path --no-sandbox
+Exec=$APPIMAGE_DIR/Cursor.AppImage --no-sandbox
 Icon=$ICON_DIR/cursor-icon.svg
-X-AppImage-Version=$local_version
 Categories=Utility;Development
 StartupWMClass=Cursor
 Terminal=false
@@ -249,7 +218,7 @@ add_cli_command() {
   
   local script_content="#!/bin/bash
 
-APPIMAGE_PATH=\"$local_path\"
+APPIMAGE_PATH=\"$APPIMAGE_DIR/Cursor.AppImage\"
 
 if [[ ! -f \"\$APPIMAGE_PATH\" ]]; then
    echo \"Error: Cursor AppImage not found at \$APPIMAGE_PATH\" >&2;
@@ -334,10 +303,10 @@ remove_cli_command() {
 
 remove_appimages() {
   log 2 "Removing Cursor AppImages..."
-  local cursor_appimages=$(find "$DOWNLOAD_DIR" -maxdepth 1 -type f -name 'Cursor-*.AppImage' 2>/dev/null)
+  local cursor_appimages=$(find "$APPIMAGE_DIR" -maxdepth 1 -type f -name 'Cursor*.AppImage*' 2>/dev/null)
   
   if [[ -z "$cursor_appimages" ]]; then
-    log 2 "No Cursor AppImages found in $DOWNLOAD_DIR"
+    log 2 "No Cursor AppImages found in $APPIMAGE_DIR"
     return 0
   fi
   
@@ -406,10 +375,7 @@ print_status() {
   fi
   
   # Show basic installation info
-  echo "Cursor is installed:"
-  echo "  Version: $local_version"
-  echo "  Location: $local_path"
-  echo "  Size: $(convert_to_mb "$local_size")"
+  echo "Cursor is installed at $APPIMAGE_DIR/Cursor.AppImage"
   
   # Initialize configuration status flag
   local config_needs_update=false
@@ -423,7 +389,7 @@ print_status() {
   else
     local desktop_exec=$(grep -oP '^Exec=\K.*AppImage' "$USER_DESKTOP_FILE" 2>/dev/null)
     local application_exec=$(grep -oP '^Exec=\K.*AppImage' "$APPLICATION_DESKTOP_FILE" 2>/dev/null)
-    if [[ -n "$desktop_exec" && "$desktop_exec" == "$local_path" && -n "$application_exec" && "$application_exec" == "$local_path" ]]; then
+    if [[ -n "$desktop_exec" && "$desktop_exec" == "$APPIMAGE_DIR/Cursor.AppImage" && -n "$application_exec" && "$application_exec" == "$APPIMAGE_DIR/Cursor.AppImage" ]]; then
       echo "Yes [VALID]"
     else
       echo "Yes [NEEDS RECONFIGURATION]"
@@ -439,7 +405,7 @@ print_status() {
     config_needs_update=true
   else
     local cli_path=$(grep -oP 'APPIMAGE_PATH="\K[^"]*' "$(which cursor)" 2>/dev/null)
-    if [[ -n "$cli_path" && "$cli_path" == "$local_path" ]]; then
+    if [[ -n "$cli_path" && "$cli_path" == "$APPIMAGE_DIR/Cursor.AppImage" ]]; then
       echo "Yes ($(which cursor)) [VALID]"
     else
       echo "Yes ($(which cursor)) [NEEDS RECONFIGURATION]"
@@ -463,8 +429,10 @@ main() {
     exit 0
   fi
   
+  # Validate operating system
+  validate_os
+
   local do_fetch=false
-  local do_download=false
   local do_logo=false
   local do_desktop=false
   local do_cli=false
@@ -481,7 +449,6 @@ main() {
         ;;
       -a|--all)
         do_fetch=true
-        do_download=true
         do_logo=true
         do_desktop=true
         do_cli=true
@@ -489,7 +456,6 @@ main() {
         ;;
       -f|--fetch)
         do_fetch=true
-        do_download=true
         shift
         ;;
       -c|--configure)
@@ -523,9 +489,6 @@ main() {
     esac
   done
   
-  # Validate operating system
-  validate_os
-  
   # Check status if requested
   if [[ "$do_status" == true ]]; then
     print_status
@@ -538,24 +501,22 @@ main() {
     exit $?
   fi
   
-  # Check and install dependencies
-  check_dependencies
-  
   # Fetch remote version if requested
   if [[ "$do_fetch" == true ]]; then
+    # Check and install dependencies
+    check_dependencies
+    
     find_remote_version || exit 1
   
     # Download if requested
-    if [[ "$do_download" == true ]]; then
-      if ! find_local_version || [[ "$local_hash" != "$remote_hash" ]]; then
-        download_appimage || exit 1
-      else
-        log 2 "Latest version already downloaded. No need to download again."
-      fi
+    if ! find_local_version || [[ "$local_hash" != "$remote_hash" ]]; then
+      download_appimage || exit 1
+    else
+      log 2 "Latest version already downloaded. No need to download again."
     fi
   fi
   
-  # If we need to configure but have no local version, try to find it
+  # If we need to configure but have no local version
   if [[ "$do_desktop" == true || "$do_cli" == true || "$do_logo" == true ]]; then
     if ! find_local_version; then
       log 0 "No local Cursor AppImage found. Use --fetch to download."
