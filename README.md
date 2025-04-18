@@ -19,21 +19,28 @@ chmod +x setup.sh
 
 ## Features
 
-- Downloads the latest Cursor AppImage
-- Creates desktop launcher
-- Adds `cursor` command to path
-- Checks installation status
-- Simple command-line interface
+- **Automated Installation**: Downloads the latest Cursor AppImage from official sources
+- **System Integration**: 
+  - Creates desktop launcher for easy access
+  - Adds `cursor` command to system PATH
+- **Management Tools**:
+  - Status checking to verify installation integrity
+  - Uninstallation option for clean removal
+- **Update Handling**: Seamless integration with Cursor's built-in auto-update system
 
-## Roadmap
+## Project Status
 
-- [x] Implement all features available in the [`cursor-setup-wizard`](https://github.com/jorcelinojunior/cursor-setup-wizard/)
-- [x] AppImage download url retrieval through official Cursor API
-- [x] Support any Debian-based OS
-- [x] Uninstaller feature
-- [ ] Fully unprivileged configuration
-- [ ] Integration with Cursor's internal auto-update mechanism
+### Completed
+- ✅ Feature parity with the original [`cursor-setup-wizard`](https://github.com/jorcelinojunior/cursor-setup-wizard/)
+- ✅ Direct integration with Cursor's official API for reliable downloads
+- ✅ Broad compatibility across Debian-based distributions
+- ✅ Complete uninstallation capability
+- ✅ Proper handling of Cursor's native update mechanism
 
+### Soon ...
+- 🔄 Fully unprivileged installation mode (no sudo required expect for dependency installation)
+- 🔄 Fine-grained libfuse2 installation/detection
+- 🔄 Improved error handling and recovery
 
 ## Usage
 
@@ -49,6 +56,9 @@ Options:
   -c, --configure       Configure desktop launcher and CLI
 
   -s, --status          Check Cursor installation status
+
+  -r, --remove          Uninstall Cursor (remove icon, desktop launcher, and CLI command)
+  -p, --remove-purge    Uninstall Cursor and purge all AppImages
 
   -h, --help            Show help message
   -q, --quiet           Show only errors and warnings
