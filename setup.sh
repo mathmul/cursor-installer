@@ -118,8 +118,7 @@ calculate_etag() {
 
 find_local_version() {
   if [[ -f "$APPIMAGE_DIR/Cursor.AppImage" ]]; then
-    local_path="$APPIMAGE_DIR/Cursor.AppImage"
-    local_hash=$(calculate_etag "$local_path")
+    local_hash=$(calculate_etag "$APPIMAGE_DIR/Cursor.AppImage")
     log 2 "Local version hash: $local_hash"
     return 0
   else
@@ -168,8 +167,6 @@ download_appimage() {
     log 0 "Failed to set executable permissions for $cursor_path"
     return 1
   fi
-  
-  local_path="$cursor_path"
   return 0
 }
 
