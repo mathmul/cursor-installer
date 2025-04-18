@@ -142,6 +142,8 @@ download_logo() {
 }
 
 download_appimage() {
+  mkdir -p "$APPIMAGE_DIR"
+
   log 2 "Starting the download of the latest version..."
   local cursor_path="$APPIMAGE_DIR/Cursor.AppImage"
   
