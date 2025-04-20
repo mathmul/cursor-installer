@@ -55,7 +55,7 @@ check_dependencies() {
   )
   
   for dep in "${deps[@]}"; do
-    if ! command -v "$dep" > /dev/null 2>&1; then
+    if ! dpkg -s "$dep" > /dev/null 2>&1; then
       missing+=("$dep")
     fi
   done
