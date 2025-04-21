@@ -39,7 +39,6 @@ chmod +x setup.sh
 
 ### Soon ...
 - 🔄 Fully unprivileged installation mode (no sudo required expect for dependency installation)
-- 🔄 Fine-grained libfuse2 installation/detection
 - 🔄 Improved error handling and recovery
 
 ## Usage

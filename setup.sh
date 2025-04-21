@@ -51,7 +51,6 @@ check_dependencies() {
     "curl"
     "jq"
     "xxd"
-    "libfuse2"
   )
   
   for dep in "${deps[@]}"; do
@@ -59,6 +58,10 @@ check_dependencies() {
       missing+=("$dep")
     fi
   done
+
+  if ! dpkg -s "libfuse2" > /dev/null 2>&1 && ! dpkg -s "libfuse2t64" > /dev/null 2>&1; then
+    missing+=("libfuse2")
+  fi
   
   if [[ ${#missing[@]} -gt 0 ]]; then
     log 1 "Installing missing dependencies: ${missing[*]}"
