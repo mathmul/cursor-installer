@@ -1,16 +1,25 @@
-# Cursor AppImage Installer
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg" alt="Cursor Icon" width="100"/>
+</p>
 
-A bash script for installing and managing [Cursor](https://cursor.sh/) on Debian/Ubuntu-based Linux distributions.
+<h1 align="center">Cursor Installer</h1>
+
+![GitHub issues](https://img.shields.io/github/issues/mablr/cursor-installer)
+![GitHub contributors](https://img.shields.io/github/contributors/mablr/cursor-installer)
+![Licence MIT](https://img.shields.io/badge/License-MIT-blue)
+
+
+**A bash script for installing and managing [Cursor](https://cursor.sh/) on Debian/Ubuntu-based Linux distributions.**
 
 ## Quickstart
 
-Just run the setup script to install and configure Cursor:
+Run the setup script to install and configure Cursor:
 ```bash
 curl -sSL https://raw.githubusercontent.com/mablr/cursor-installer/master/setup.sh | bash -s -- -a
 ```
 
-Or clone this repository and then run the setup script:
-```
+Or clone the repository and run the setup script:
+```bash
 git clone https://github.com/mablr/cursor-installer
 cd cursor-installer
 chmod +x setup.sh
@@ -25,7 +34,7 @@ chmod +x setup.sh
   - Adds `cursor` command to system PATH
 - **Management Tools**:
   - Status checking to verify installation integrity
-  - Uninstallation option for clean removal
+  - Clean uninstallation option
 - **Update Handling**: Seamless integration with Cursor's built-in auto-update system
 
 ## Project Status
@@ -37,8 +46,8 @@ chmod +x setup.sh
 - ✅ Complete uninstallation capability
 - ✅ Proper handling of Cursor's native update mechanism
 
-### Soon ...
-- 🔄 Fully unprivileged installation mode (no sudo required expect for dependency installation)
+### Coming Soon
+- 🔄 Fully unprivileged installation mode (no sudo required except for dependency installation)
 - 🔄 Improved error handling and recovery
 
 ## Usage
