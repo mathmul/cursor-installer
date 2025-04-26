@@ -7,7 +7,6 @@ readonly APPIMAGE_DIR="$HOME/.AppImage"
 readonly ICON_DIR="$HOME/.local/share/icons"
 readonly USER_DESKTOP_FILE="$HOME/Desktop/cursor.desktop"
 readonly APPLICATION_DESKTOP_FILE="$HOME/.local/share/applications/cursor.desktop"
-readonly CLI_COMMAND="/usr/local/bin/cursor"
 readonly API_URL="https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
 readonly ICON_URL="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg"
 
@@ -215,33 +214,35 @@ EOF
   return 0
 }
 
-add_cli_command() {
-  log 2 "Adding the 'cursor' command to your system..."
-  
-  local script_content="#!/bin/bash
+cli_setup() {
+  log 2 "$([ "$1" == "install" ] && echo "Adding" || echo "Removing") the 'cursor' CLI command ..."
 
-APPIMAGE_PATH=\"$APPIMAGE_DIR/Cursor.AppImage\"
+  # Common shell config files to check
+  local shell_configs=(
+    "$HOME/.bashrc"
+    "$HOME/.zshrc"
+  )
 
-if [[ ! -f \"\$APPIMAGE_PATH\" ]]; then
-   echo \"Error: Cursor AppImage not found at \$APPIMAGE_PATH\" >&2;
-   exit 1;
-fi
-
-\"\$APPIMAGE_PATH\" --no-sandbox \"\$@\" &> /dev/null &
-"
-  
-  if echo "$script_content" | sudo tee "$CLI_COMMAND" > /dev/null; then
-    if sudo chmod +x "$CLI_COMMAND"; then
-      log 2 "CLI command 'cursor' successfully installed."
-      return 0
+  # Add or remove cursor() function in config files
+  for config in "${shell_configs[@]}"; do
+    if [[ -f "$config" ]]; then
+      if [[ "$1" == "install" ]]; then
+        if ! grep -q "^cursor() " "$config"; then
+          echo "cursor() { '$APPIMAGE_DIR/Cursor.AppImage' --no-sandbox \$@ &> /dev/null }" >> "$config"
+          log 2 "CLI command added to $(basename "$config")"
+        else
+          log 2 "CLI command already exists in $(basename "$config"). Skipping."
+        fi
+      else
+        echo "$(grep -v "^cursor() " "$config")" > "$config"
+        log 2 "CLI command removed from $(basename "$config")"
+      fi
     else
-      log 0 "Failed to set permissions for $CLI_COMMAND"
-      return 1
+      log 2 "File not found: $(basename "$config"). Skipping."
     fi
-  else
-    log 0 "Failed to create CLI command."
-    return 1
-  fi
+  done
+  log 2 "CLI command $([ "$1" == "install" ] && echo "added" || echo "removed"). You may need to restart your shell."
+  return 0
 }
 
 remove_icon() {
@@ -288,21 +289,6 @@ remove_launchers() {
   return $result
 }
 
-remove_cli_command() {
-  log 2 "Removing 'cursor' command..."
-  if [[ -f "$CLI_COMMAND" ]]; then
-    if sudo rm -f "$CLI_COMMAND"; then
-      log 2 "CLI command removed successfully."
-    else
-      log 0 "Failed to remove CLI command."
-      return 1
-    fi
-  else
-    log 2 "CLI command not found. Skipping."
-  fi
-  return 0
-}
-
 remove_appimages() {
   log 2 "Removing Cursor AppImages..."
   local cursor_appimages=$(find "$APPIMAGE_DIR" -maxdepth 1 -type f -name 'Cursor*.AppImage*' 2>/dev/null)
@@ -332,8 +318,8 @@ uninstall_cursor() {
   
   remove_icon
   remove_launchers
-  remove_cli_command
-  
+  cli_setup "remove"
+
   if [[ "$purge" == true ]]; then
     remove_appimages
   fi
@@ -400,19 +386,12 @@ print_status() {
   fi
   
   # Check CLI command
-  echo -n "  CLI command: "
-  
-  if ! command -v cursor &> /dev/null; then
+  echo -n "  CLI: "
+  if command -v cursor &> /dev/null; then
+    echo "Yes [VALID]"
+  else
     echo "No [NEEDS CONFIGURATION]"
     config_needs_update=true
-  else
-    local cli_path=$(grep -oP 'APPIMAGE_PATH="\K[^"]*' "$(which cursor)" 2>/dev/null)
-    if [[ -n "$cli_path" && "$cli_path" == "$APPIMAGE_DIR/Cursor.AppImage" ]]; then
-      echo "Yes ($(which cursor)) [VALID]"
-    else
-      echo "Yes ($(which cursor)) [NEEDS RECONFIGURATION]"
-      config_needs_update=true
-    fi
   fi
 
   # Show recommendation if any configuration needs update
@@ -538,7 +517,7 @@ main() {
   
   # Add CLI command if requested
   if [[ "$do_cli" == true ]]; then
-    add_cli_command
+    cli_setup "install"
   fi
   
   log 2 "Cursor setup script completed successfully!"
