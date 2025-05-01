@@ -50,6 +50,10 @@ chmod +x setup.sh
 - 🔄 Fully unprivileged installation mode (no sudo required except for dependency installation)
 - 🔄 Improved error handling and recovery
 
+## Limitations
+
+- ℹ️ **AppImageLauncher Conflict**: This installer is not compatible with AppImageLauncher. If you have AppImageLauncher installed, it may interfere with the proper functioning of Cursor. It is recommended to remove AppImageLauncher before using this installer.
+
 ## Usage
 
 ```bash
