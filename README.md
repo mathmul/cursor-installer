@@ -36,15 +36,8 @@ chmod +x setup.sh
   - Status checking to verify installation integrity
   - Clean uninstallation option
 - **Update Handling**: Seamless integration with Cursor's built-in auto-update system
-
-## Project Status
-
-### Completed
-- ✅ Feature parity with the original [`cursor-setup-wizard`](https://github.com/jorcelinojunior/cursor-setup-wizard/)
-- ✅ Direct integration with Cursor's official API for reliable downloads
-- ✅ Broad compatibility across Debian-based distributions
-- ✅ Complete uninstallation capability
-- ✅ Proper handling of Cursor's native update mechanism
+- **Broad Compatibility**: Works across Debian/Ubuntu-based distributions
+- **Direct API Integration**: Reliable downloads from Cursor's official API
 
 ## Limitations
 
