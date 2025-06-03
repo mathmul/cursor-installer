@@ -9,7 +9,7 @@ readonly USER_DESKTOP_FILE="$HOME/Desktop/cursor.desktop"
 readonly APPLICATION_DESKTOP_FILE="$HOME/.local/share/applications/cursor.desktop"
 readonly CLI_COMMAND="/usr/local/bin/cursor"
 readonly API_URL="https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
-readonly ICON_URL="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg"
+readonly ICON_URL="https://mintlify.s3-us-west-1.amazonaws.com/cursor/images/logo/app-logo.svg"
 
 # Variables
 local_hash=""
@@ -134,7 +134,20 @@ download_logo() {
   log 2 "Downloading Cursor logo..."
   mkdir -p "$ICON_DIR"
   
+  local fallback_svg="https://raw.githubusercontent.com/mablr/cursor-installer/refs/heads/master/cursor-icon.svg"
+  
   if curl -s -o "$ICON_DIR/cursor-icon.svg" "$ICON_URL"; then
+    if grep -q "<svg" "$ICON_DIR/cursor-icon.svg"; then
+      log 2 "Logo successfully downloaded to: $ICON_DIR/cursor-icon.svg"
+      return 0
+    else
+      log 1 "Downloaded official logo ($ICON_URL), but file is not a valid SVG. Falling back to last known good copy..."
+    fi
+  else
+    log 1 "Failed to download official logo. Falling back to last known good copy..."
+  fi
+
+  if curl -s -o "$ICON_DIR/cursor-icon.svg" "$fallback_svg"; then
     log 2 "Logo successfully downloaded to: $ICON_DIR/cursor-icon.svg"
     return 0
   else
